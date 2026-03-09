@@ -1,3 +1,18 @@
+class Project
+{
+    static void Main()
+    {
+        Console.CursorVisible = false;
+        Game game = new Game();
+        while (true)
+        {
+            game.Update();
+            game.Render();
+            Thread.Sleep(16);
+        }
+    }
+}
+
 struct Block
 {
     public int x, y;
@@ -12,8 +27,8 @@ class PlayerBlock
         [new Block(0,0), new Block(-1,0), new Block(1,0), new Block(2,0)],   // I
         [new Block(0,0), new Block(0,1), new Block(1,0), new Block(1,1)],    // O
         [new Block(0,0), new Block(0,1), new Block(-1,0), new Block(1,0)],   // T
-        [new Block(0,0), new Block(-1,0), new Block(1,0), new Block(-1,1)],  // S
-        [new Block(0,0), new Block(-1,0), new Block(1,0), new Block(1,-1)],  // Z
+        [new Block(0,0), new Block(1,0), new Block(0,1), new Block(-1,1)],  // S
+        [new Block(0,0), new Block(-1,0), new Block(0,1), new Block(1,1)],  // Z
         [new Block(0,0), new Block(-1,0), new Block(1,0), new Block(-1,-1)], // J
         [new Block(0,0), new Block(0,1), new Block(0,2), new Block(1,0)]     // L
     ];
@@ -55,6 +70,17 @@ class PlayerBlock
 
         return temp;
     }
+
+    public bool isTherePlayer(int X, int Y)
+    {
+        foreach(Block tempbloc in currentShape)
+        {
+            if(y + tempbloc.y == Y && x + tempbloc.x == X) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 class World
@@ -78,15 +104,10 @@ class World
         return true;
     }
 
-    public int[,] Load()
+    public bool GetBlock(int x, int y)
     {
-        for(int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < length; j++)
-            {
-                
-            }
-        }
+        if(worldBlock[x, y] != 1) return false;
+        return true;
     }
 
     public void Add(Block[] block, int x, int y)
@@ -142,18 +163,16 @@ class Game
 
     public void Render() {
         Console.Clear();
-        for(int row = 0; row <= World.length; row++) {
-            for(int col = 0; col <= World.width; col++) {
-                // 공 위치
-                if((int)player.y == row && (int)player.x == col) {
+        for(int row = 0; row < World.length; row++) {
+            for(int col = 0; col < World.width; col++) {
+                if(player.isTherePlayer(col, row)) {
                     Console.Write("■");
                 }
-                // 패들 위치
-                else if() {
-                    Console.Write("");
+                else if(world.GetBlock(col, row)) {
+                    Console.Write("■");
                 }
                 else {
-                    Console.Write("");
+                    Console.Write("□");
                 }
             }
             Console.WriteLine();
@@ -180,6 +199,12 @@ class Game
                 if(!world.isCanAdd(player.currentShape, player.x, player.y))
                 {
                     player.Move(1, 0);
+                }
+            }else if(key == ConsoleKey.DownArrow) {
+                player.Move(0, 1); // 왼쪽으로 이동
+                if(!world.isCanAdd(player.currentShape, player.x, player.y))
+                {
+                    player.Move(0, -1);
                 }
             } else if(key == ConsoleKey.R) {
                 player.Rotate(); // 왼쪽으로 이동
